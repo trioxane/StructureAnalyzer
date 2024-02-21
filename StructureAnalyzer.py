@@ -501,7 +501,7 @@ class CrystalGraphAnalyzerResult:
             self.edited_graph_total_bvs = np.nan
             self.restored_graph_total_bvs = np.nan
 
-    def results_as_string(self) -> dict:
+    def results_as_string(self) -> str:
         """
         Get the results as a formatted string.
 
