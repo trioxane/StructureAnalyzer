@@ -1,0 +1,122 @@
+data_52955-TOPOS_245624_BaCuTeF
+_database_code_ICSD                 245624
+_audit_creation_date                2024-01-24
+_audit_creation_method              ToposPro
+_chemical_formula_structural        BaCuTeF
+_chemical_name_systematic
+;
+Barium copper telluride fluoride. 
+;
+_chemical_formula_sum               'Ba Cu F Te'
+_citation_journal_abbrev            'Journal of Solid State Chemistry'
+_citation_year                      2007
+_citation_journal_volume            180
+_citation_page_first                1672
+_citation_page_last                 1677
+_citation_special_details
+;
+Title: Structure and physical properties of Ba Cu Te F. Space Group: 
+P 4/n m m Z->P 4/n m m. File: YourCustomFileName17.cif. 
+CENTAT: Cu1
+ Ba1
+LIGAND: F[M4]{1809} Te[M8]{1843}
+ATOMLIG: F1#1 Te1#2
+SIMPPAR:
+ METH=Stand; INTRA=V
+;
+loop_
+_publ_author_name
+'Park C.-H.'
+'Kykyneshi R.'
+'Yokochi A.'
+'Tate J.'
+'Keszler D.A.'
+_cell_length_a                      4.4297
+_cell_length_b                      4.4297
+_cell_length_c                      9.3706
+_cell_angle_alpha                   90
+_cell_angle_beta                    90
+_cell_angle_gamma                   90
+_cell_volume                        183.8722
+_cell_formula_units_z               2
+_symmetry_space_group_name_h-m      'P 4/n m m'
+_symmetry_int_tables_number         129
+_refine_ls_r_factor_all             0
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 1/2-x,1/2-y,z
+3 1/2+x,-y,-z
+4 -x,1/2+y,-z
+5 -y,-x,-z
+6 1/2+y,1/2+x,-z
+7 y,1/2-x,z
+8 1/2-y,x,z
+9 -x,-y,-z
+10 1/2+x,1/2+y,-z
+11 1/2-x,y,z
+12 x,1/2-y,z
+13 y,x,z
+14 1/2-y,1/2-x,z
+15 -y,1/2+x,-z
+16 1/2+y,-x,-z
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+F1- -1
+Cu1+ 1
+Te2- -2
+Ba2+ 2
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+F1 F1- 2 0.75000 0.25000 0.50000 1.0000
+Cu1 Cu1+ 2 0.75000 0.25000 0.00000 1.0000
+Te1 Te2- 2 0.25000 0.25000 0.83640 1.0000
+Ba1 Ba2+ 2 0.25000 0.25000 0.34430 1.0000
+loop_
+_topol_atom.id
+_topol_atom.node_id
+_topol_atom.atom_label
+_topol_atom.element_symbol
+1 1 F1 F # F1
+2 2 Cu1 Cu # Cu1
+3 3 Te1 Te # Te1
+4 4 Ba1 Ba # Ba1
+loop_
+_topol_node.id
+_topol_node.label
+1 F1
+2 Cu1
+3 Te1
+4 Ba1
+loop_
+_topol_link.node_id_1
+_topol_link.node_id_2
+_topol_link.distance
+_topol_link.symop_id_1
+_topol_link.translation_1_x
+_topol_link.translation_1_y
+_topol_link.translation_1_z
+_topol_link.symop_id_2
+_topol_link.translation_2_x
+_topol_link.translation_2_y
+_topol_link.translation_2_z
+_topol_link.type
+_topol_link.multiplicity
+_topol_link.voronoi_solid_angle
+1 4 2.6522 1 0 0 0 3 0 0 1 v 8 14.64 # F1 Ba1
+1 1 3.1323 1 0 0 0 3 -1 0 1 vw 4 6.64 # F1 F1
+1 3 3.8526 1 0 0 0 3 0 0 1 vw 8 3.72 # F1 Te1
+2 3 2.6936 1 0 0 0 3 0 0 1 v 8 14.33 # Cu1 Te1
+2 2 3.1323 1 0 0 0 3 -1 0 0 v 4 7.26 # Cu1 Cu1
+2 4 3.9134 1 0 0 0 1 0 0 0 v 8 3.41 # Cu1 Ba1
+3 4 3.5607 1 0 0 0 3 -1 0 1 v 8 6.94 # Te1 Ba1
+#End of data_52955-TOPOS_245624_BaCuTeF
+

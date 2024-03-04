@@ -1,0 +1,106 @@
+data_12499-TOPOS_43292_ZrCl3
+_database_code_ICSD                 43292
+_audit_creation_date                2024-01-24
+_audit_creation_method              ToposPro
+_chemical_formula_structural        ZrCl3
+_chemical_name_systematic
+;
+Zirconium chloride(1/3) - supercell. 
+;
+_chemical_formula_sum               'Cl3 Zr'
+_citation_journal_abbrev            'Canadian Journal of Physics'
+_citation_year                      1964
+_citation_journal_volume            42
+_citation_page_first                1886
+_citation_page_last                 1889
+_citation_special_details
+;
+Title: Crystal structure of zirconium trichloride. File: YourCustomFi
+leName4.cif. 
+CENTAT: Zr1
+LIGAND: Cl[M2]{1305}
+ATOMLIG: Cl1#1
+SIM
+PPAR: METH=Stand; INTRA=V
+;
+loop_
+_publ_author_name
+'Swaroop B.'
+'Flengas S.N.'
+_cell_length_a                      5.961
+_cell_length_b                      5.961
+_cell_length_c                      9.669
+_cell_angle_alpha                   90
+_cell_angle_beta                    90
+_cell_angle_gamma                   120
+_cell_volume                        297.5435
+_cell_formula_units_z               2
+_symmetry_space_group_name_h-m      'P -3 1 m'
+_symmetry_int_tables_number         162
+_refine_ls_r_factor_all             0
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 -y,x-y,z
+3 -x+y,-x,z
+4 -y,-x,-z
+5 x,x-y,-z
+6 -x+y,y,-z
+7 -x,-y,-z
+8 y,-x+y,-z
+9 x-y,x,-z
+10 y,x,z
+11 -x,-x+y,z
+12 x-y,-y,z
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Cl1- -1
+Zr3+ 3
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Cl1 Cl1- 6 0.33330 0.00000 0.25000 1.0000
+Zr1 Zr3+ 2 0.33333 0.66667 0.00000 1.0000
+loop_
+_topol_atom.id
+_topol_atom.node_id
+_topol_atom.atom_label
+_topol_atom.element_symbol
+1 1 Cl1 Cl # Cl1
+2 2 Zr1 Zr # Zr1
+loop_
+_topol_node.id
+_topol_node.label
+1 Cl1
+2 Zr1
+loop_
+_topol_link.node_id_1
+_topol_link.node_id_2
+_topol_link.distance
+_topol_link.symop_id_1
+_topol_link.translation_1_x
+_topol_link.translation_1_y
+_topol_link.translation_1_z
+_topol_link.symop_id_2
+_topol_link.translation_2_x
+_topol_link.translation_2_y
+_topol_link.translation_2_z
+_topol_link.type
+_topol_link.multiplicity
+_topol_link.voronoi_solid_angle
+_topol_link.bv
+1 2 3.1292 1 0 0 0 7 1 1 0 v 12 12.11 0.5 # Cl1 Zr1
+1 1 3.4412 1 0 0 0 2 0 0 0 sb 6 12.50 0.55 # Cl1 Cl1
+1 1 3.4418 1 0 0 0 3 1 1 0 hb 12 9.78 0.1 # Cl1 Cl1
+1 1 5.2268 1 0 0 0 5 0 0 1 . 6 3.76 0.1 # Cl1 Cl1
+1 1 5.2271 1 0 0 0 6 1 0 1 vw 3 3.76 0.1 # Cl1 Cl1
+2 2 3.4416 1 0 0 0 7 1 2 0 v 3 9.10 0.1 # Zr1 Zr1
+#End of data_12499-TOPOS_43292_ZrCl3
+

@@ -1,0 +1,110 @@
+data_41955-TOPOS_165175_Au(CN)
+_database_code_ICSD                 165175
+_audit_creation_date                2024-01-24
+_audit_creation_method              ToposPro
+_chemical_formula_structural        Au(CN)
+_chemical_name_systematic
+;
+Gold cyanide. 
+;
+_chemical_formula_sum               'Au C N'
+_citation_journal_abbrev            'Inorganic Chemistry'
+_citation_year                      2003
+_citation_journal_volume            42
+_citation_page_first                4724
+_citation_page_last                 4730
+_citation_special_details
+;
+Title: Structure of Au C N determined from total neutron diffraction.
+ File: YourCustomFileName12.cif. 
+CENTAT: Au1
+LIGAND: CN[B2]{1476}
+
+ATOMLIG: C1#1 N1#1
+SIMPPAR: METH=Stand; INTRA=V
+;
+loop_
+_publ_author_name
+'Hibble S.J.'
+'Hannon A.C.'
+'Cheyne S.M.'
+_cell_length_a                      3.3915
+_cell_length_b                      3.3915
+_cell_length_c                      5.07256
+_cell_angle_alpha                   90
+_cell_angle_beta                    90
+_cell_angle_gamma                   120
+_cell_volume                        50.52909
+_cell_formula_units_z               1
+_symmetry_space_group_name_h-m      'P 6 m m'
+_symmetry_int_tables_number         183
+_refine_ls_r_factor_all             0
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 -x,-y,z
+3 -y,x-y,z
+4 -x+y,-x,z
+5 x-y,x,z
+6 y,-x+y,z
+7 -x+y,y,z
+8 x,x-y,z
+9 -y,-x,z
+10 y,x,z
+11 -x,-x+y,z
+12 x-y,-y,z
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+C0+ 0
+N1- -1
+Au1+ 1
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+C1 C0+ 1 0.00000 0.00000 0.38710 1.0000
+N1 N1- 1 0.00000 0.00000 0.61290 1.0000
+Au1 Au1+ 1 0.00000 0.00000 0.00000 1.0000
+loop_
+_topol_atom.id
+_topol_atom.node_id
+_topol_atom.atom_label
+_topol_atom.element_symbol
+1 1 C1 C # C1
+2 2 N1 N # N1
+3 3 Au1 Au # Au1
+loop_
+_topol_node.id
+_topol_node.label
+1 C1
+2 N1
+3 Au1
+loop_
+_topol_link.node_id_1
+_topol_link.node_id_2
+_topol_link.distance
+_topol_link.symop_id_1
+_topol_link.translation_1_x
+_topol_link.translation_1_y
+_topol_link.translation_1_z
+_topol_link.symop_id_2
+_topol_link.translation_2_x
+_topol_link.translation_2_y
+_topol_link.translation_2_z
+_topol_link.type
+_topol_link.multiplicity
+_topol_link.voronoi_solid_angle
+1 2 1.1454 1 0 0 0 1 0 0 0 v 1 34.66 # C1 N1
+1 3 1.9636 1 0 0 0 1 0 0 0 v 1 25.82 # C1 Au1
+1 1 3.3915 1 0 0 0 1 -1 -1 0 vw 3 6.59 # C1 C1
+2 3 1.9636 1 0 0 0 1 0 0 1 v 1 25.82 # N1 Au1
+2 2 3.3915 1 0 0 0 1 1 0 0 vw 3 6.59 # N1 N1
+3 3 3.3915 1 0 0 0 1 1 0 0 vw 3 8.06 # Au1 Au1
+#End of data_41955-TOPOS_165175_Au(CN)
+

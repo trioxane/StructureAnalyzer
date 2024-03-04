@@ -1,0 +1,119 @@
+data_6420-TOPOS_25626_AgCrSe2
+_database_code_ICSD                 25626
+_audit_creation_date                2024-01-24
+_audit_creation_method              ToposPro
+_chemical_formula_structural        AgCrSe2
+_chemical_name_systematic
+;
+Silver chromium selenide. 
+;
+_chemical_formula_sum               'Ag Cr Se2'
+_citation_journal_abbrev            'Zeitschrift fuer Anorganische und Allgemeine Chemie'
+_citation_year                      1957
+_citation_journal_volume            290
+_citation_page_first                68
+_citation_page_last                 81
+_citation_special_details
+;
+Title: Ueber ternaere Chalkogenide des Chroms mit einwertigem Kupfer 
+und Silber. Space Group: R 3 m H->R 3 m. File: YourCustomFileName3.ci
+f. 
+CENTAT: Cr1 Ag1
+LIGAND: Se[M6]{1512} Se[M4]{1512}
+ATOMLIG: Se1
+#1 Se2#2
+SIMPPAR: METH=Stand; INTRA=V
+;
+loop_
+_publ_author_name
+'Hahn H.'
+'De LORENT C.'
+_cell_length_a                      3.691
+_cell_length_b                      3.691
+_cell_length_c                      21.22
+_cell_angle_alpha                   90
+_cell_angle_beta                    90
+_cell_angle_gamma                   120
+_cell_volume                        250.3595
+_cell_formula_units_z               3
+_symmetry_space_group_name_h-m      'R 3 m'
+_symmetry_int_tables_number         160
+_refine_ls_r_factor_all             0
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 -y,x-y,z
+3 -x+y,-x,z
+4 -x+y,y,z
+5 x,x-y,z
+6 -y,-x,z
+7 2/3+x,1/3+y,1/3+z
+8 1/3+x,2/3+y,2/3+z
+9 2/3-y,1/3+x-y,1/3+z
+10 1/3-y,2/3+x-y,2/3+z
+11 2/3-x+y,1/3-x,1/3+z
+12 1/3-x+y,2/3-x,2/3+z
+13 2/3-x+y,1/3+y,1/3+z
+14 1/3-x+y,2/3+y,2/3+z
+15 2/3+x,1/3+x-y,1/3+z
+16 1/3+x,2/3+x-y,2/3+z
+17 2/3-y,1/3-x,1/3+z
+18 1/3-y,2/3-x,2/3+z
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Cr3+ 3
+Se2- -2
+Ag1+ 1
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Cr1 Cr3+ 3 0.00000 0.00000 0.73000 1.0000
+Se1 Se2- 3 0.00000 0.00000 0.00000 1.0000
+Se2 Se2- 3 0.00000 0.00000 0.14000 1.0000
+Ag1 Ag1+ 3 0.00000 0.00000 0.27000 1.0000
+loop_
+_topol_atom.id
+_topol_atom.node_id
+_topol_atom.atom_label
+_topol_atom.element_symbol
+1 1 Cr1 Cr # Cr1
+2 2 Se1 Se # Se1
+3 3 Se2 Se # Se2
+4 4 Ag1 Ag # Ag1
+loop_
+_topol_node.id
+_topol_node.label
+1 Cr1
+2 Se1
+3 Se2
+4 Ag1
+loop_
+_topol_link.node_id_1
+_topol_link.node_id_2
+_topol_link.distance
+_topol_link.symop_id_1
+_topol_link.translation_1_x
+_topol_link.translation_1_y
+_topol_link.translation_1_z
+_topol_link.symop_id_2
+_topol_link.translation_2_x
+_topol_link.translation_2_y
+_topol_link.translation_2_z
+_topol_link.type
+_topol_link.multiplicity
+_topol_link.voronoi_solid_angle
+1 2 2.5194 1 0 0 0 8 0 -1 0 v 9 15.07 # Cr1 Se1
+1 3 2.6810 1 0 0 0 8 0 -1 0 v 9 14.13 # Cr1 Se2
+2 4 2.5194 1 0 0 0 8 0 -1 -1 v 9 16.67 # Se1 Ag1
+2 3 2.9708 1 0 0 0 1 0 0 0 vw 3 4.78 # Se1 Se2
+3 4 2.7586 1 0 0 0 1 0 0 0 v 3 20.97 # Se2 Ag1
+3 3 3.6910 1 0 0 0 1 1 1 0 vw 9 5.31 # Se2 Se2
+#End of data_6420-TOPOS_25626_AgCrSe2
+

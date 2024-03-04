@@ -1,0 +1,105 @@
+data_82987-TOPOS_653277_Ti
+_database_code_ICSD                 653277
+_audit_creation_date                2024-01-24
+_audit_creation_method              ToposPro
+_chemical_formula_structural        Ti
+_chemical_name_systematic
+;
+Titanium. 
+;
+_chemical_formula_sum               Ti
+_citation_journal_abbrev            'Physics of Metals and Metallography'
+_citation_year                      1973
+_citation_journal_volume            36
+_citation_page_first                200
+_citation_page_last                 202
+_citation_special_details
+;
+Title: Observation of omega-titanium in a composite hard facing alloy
+ based onfine-grain diamonds. File: YourCustomFileName25.cif. 
+;
+loop_
+_publ_author_name
+'Chebotareva YE.S.'
+'Nuzhdina S.G.'
+_cell_length_a                      4.6
+_cell_length_b                      4.6
+_cell_length_c                      2.82
+_cell_angle_alpha                   90
+_cell_angle_beta                    90
+_cell_angle_gamma                   120
+_cell_volume                        51.67677
+_cell_formula_units_z               3
+_symmetry_space_group_name_h-m      'P 6/m m m'
+_symmetry_int_tables_number         191
+_refine_ls_r_factor_all             0
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 -x,-y,z
+3 -y,x-y,z
+4 -x+y,-x,z
+5 x-y,x,z
+6 y,-x+y,z
+7 x-y,-y,-z
+8 -x,-x+y,-z
+9 y,x,-z
+10 -y,-x,-z
+11 x,x-y,-z
+12 -x+y,y,-z
+13 -x,-y,-z
+14 x,y,-z
+15 y,-x+y,-z
+16 x-y,x,-z
+17 -x+y,-x,-z
+18 -y,x-y,-z
+19 -x+y,y,z
+20 x,x-y,z
+21 -y,-x,z
+22 y,x,z
+23 -x,-x+y,z
+24 x-y,-y,z
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Ti1 Ti 1 0.00000 0.00000 0.00000 1.0000
+Ti2 Ti 2 0.33333 0.66667 0.50000 1.0000
+loop_
+_topol_atom.id
+_topol_atom.node_id
+_topol_atom.atom_label
+_topol_atom.element_symbol
+1 1 Ti1 Ti # Ti1
+2 2 Ti2 Ti # Ti2
+loop_
+_topol_node.id
+_topol_node.label
+1 Ti1
+2 Ti2
+loop_
+_topol_link.node_id_1
+_topol_link.node_id_2
+_topol_link.distance
+_topol_link.symop_id_1
+_topol_link.translation_1_x
+_topol_link.translation_1_y
+_topol_link.translation_1_z
+_topol_link.symop_id_2
+_topol_link.translation_2_x
+_topol_link.translation_2_y
+_topol_link.translation_2_z
+_topol_link.type
+_topol_link.multiplicity
+_topol_link.voronoi_solid_angle
+1 1 2.8200 1 0 0 0 1 0 0 -1 v 1 9.22 # Ti1 Ti1
+1 2 3.0069 1 0 0 0 2 1 1 -1 v 12 6.80 # Ti1 Ti2
+2 2 2.6558 1 0 0 0 2 1 2 0 v 3 12.36 # Ti2 Ti2
+2 2 2.8200 1 0 0 0 1 0 0 -1 v 2 11.07 # Ti2 Ti2
+#End of data_82987-TOPOS_653277_Ti
+

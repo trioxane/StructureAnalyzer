@@ -1,0 +1,117 @@
+data_59-TOPOS_108_TeI
+_database_code_ICSD                 108
+_audit_creation_date                2024-01-24
+_audit_creation_method              ToposPro
+_chemical_formula_structural        TeI
+_chemical_name_systematic
+;
+Tellurium iodide (1/1) - beta. 
+;
+_chemical_formula_sum               'I Te'
+_citation_journal_abbrev            'Zeitschrift fuer Anorganische und Allgemeine Chemie'
+_citation_year                      1976
+_citation_journal_volume            422
+_citation_page_first                17
+_citation_page_last                 38
+_citation_special_details
+;
+Title: Zur Kenntnis der Subhalogenide des Tellurs. File: YourCustomFi
+leName1.cif. 
+CENTAT: none
+LIGAND: ITe[1D-]
+ATOMLIG: Te1#1 Te2#1 I
+1#1 I2#1
+SIMPPAR: METH=Stand; INTRA=V
+;
+loop_
+_publ_author_name
+'Kniep R.'
+'Mootz D.'
+'Rabenau A.'
+_cell_length_a                      15.383
+_cell_length_b                      4.182
+_cell_length_c                      11.999
+_cell_angle_alpha                   90
+_cell_angle_beta                    128.09
+_cell_angle_gamma                   90
+_cell_volume                        607.531
+_cell_formula_units_z               8
+_symmetry_space_group_name_h-m      'C 1 2/m 1'
+_symmetry_int_tables_number         12
+_refine_ls_r_factor_all             0
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 -x,y,-z
+3 -x,-y,-z
+4 x,-y,z
+5 1/2+x,1/2+y,z
+6 1/2-x,1/2+y,-z
+7 1/2-x,1/2-y,-z
+8 1/2+x,1/2-y,z
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Te1+ 1
+I1- -1
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Te1 Te1+ 4 0.30659 0.00000 0.18592 1.0000
+Te2 Te1+ 4 0.42917 0.50000 0.16817 1.0000
+I1 I1- 4 0.15374 0.50000 0.18251 1.0000
+I2 I1- 4 0.61073 0.50000 0.44839 1.0000
+loop_
+_topol_atom.id
+_topol_atom.node_id
+_topol_atom.atom_label
+_topol_atom.element_symbol
+1 1 Te1 Te # Te1
+2 2 Te2 Te # Te2
+3 3 I1 I # I1
+4 4 I2 I # I2
+loop_
+_topol_node.id
+_topol_node.label
+1 Te1
+2 Te2
+3 I1
+4 I2
+loop_
+_topol_link.node_id_1
+_topol_link.node_id_2
+_topol_link.distance
+_topol_link.symop_id_1
+_topol_link.translation_1_x
+_topol_link.translation_1_y
+_topol_link.translation_1_z
+_topol_link.symop_id_2
+_topol_link.translation_2_x
+_topol_link.translation_2_y
+_topol_link.translation_2_z
+_topol_link.type
+_topol_link.multiplicity
+_topol_link.voronoi_solid_angle
+1 2 2.9101 1 0 0 0 1 0 0 0 v 8 17.52 # Te1 Te2
+1 3 3.1279 1 0 0 0 1 0 -1 0 v 8 15.21 # Te1 I1
+1 2 3.4919 1 0 0 0 6 0 -1 0 vw 4 10.52 # Te1 Te2
+1 1 4.2102 1 0 0 0 6 0 0 0 vw 4 2.36 # Te1 Te1
+1 4 4.2846 1 0 0 0 2 1 0 1 vw 8 5.69 # Te1 I2
+2 4 2.7422 1 0 0 0 1 0 0 0 v 4 20.14 # Te2 I2
+2 3 3.9500 1 0 0 0 5 0 -1 0 vw 8 8.19 # Te2 I1
+2 3 4.1332 1 0 0 0 6 0 -1 0 vw 8 5.74 # Te2 I1
+3 4 3.5978 1 0 0 0 2 1 0 1 vw 4 11.85 # I1 I2
+3 3 3.9995 1 0 0 0 2 0 0 0 vw 2 8.63 # I1 I1
+3 3 4.1820 1 0 0 0 1 0 1 0 vw 4 4.72 # I1 I1
+3 4 4.1943 1 0 0 0 5 -1 0 0 vw 8 5.62 # I1 I2
+4 4 4.1820 1 0 0 0 1 0 -1 0 vw 4 8.57 # I2 I2
+4 4 4.2093 1 0 0 0 6 1 -1 1 vw 4 6.94 # I2 I2
+4 4 4.2832 1 0 0 0 2 1 0 1 vw 2 8.12 # I2 I2
+#End of data_59-TOPOS_108_TeI
+

@@ -1,0 +1,129 @@
+data_36334-TOPOS_130654_ZrCl4
+_database_code_ICSD                 130654
+_audit_creation_date                2024-01-24
+_audit_creation_method              ToposPro
+_chemical_formula_structural        ZrCl4
+_chemical_name_systematic
+;
+Zirconium tetrachloride. 
+;
+_chemical_formula_sum               'Cl4 Zr'
+_citation_journal_abbrev            'Acta Crystallographica, Section C: Structural Chemistry'
+_citation_year                      2018
+_citation_journal_volume            74
+_citation_page_first                307
+_citation_page_last                 311
+_citation_special_details
+;
+Title: Zirconium tetrachloride revisited. File: YourCustomFileName11.
+cif. 
+CENTAT: Zr1
+LIGAND: Cl[M1]{1305} Cl[M2]{1305} Cl[M1]{1305} Cl
+[M2]{1305}
+ATOMLIG: Cl1#1 Cl2#2 Cl3#3 Cl4#4
+SIMPPAR: METH=Stand; IN
+TRA=V
+;
+loop_
+_publ_author_name
+'Borjas NEVAREZ ROSEN'
+'Balasekaran SAMUNDEE'
+'Kim EUNJA'
+'Weck PHILIPPE'
+'Poineau FREDERIC'
+_cell_length_a                      6.2311
+_cell_length_b                      7.3497
+_cell_length_c                      11.9462
+_cell_angle_alpha                   90
+_cell_angle_beta                    90
+_cell_angle_gamma                   90
+_cell_volume                        547.0967
+_cell_formula_units_z               4
+_symmetry_space_group_name_h-m      'P c a 21'
+_symmetry_int_tables_number         29
+_refine_ls_r_factor_all             0
+loop_
+_space_group_symop_id
+_space_group_symop_operation_xyz
+1 x,y,z
+2 -x,-y,1/2+z
+3 1/2-x,y,1/2+z
+4 1/2+x,-y,z
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Cl1- -1
+Zr4+ 4
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Cl1 Cl1- 4 0.57260 0.13590 0.62870 1.0000
+Cl2 Cl1- 4 0.09270 0.38960 0.61336 1.0000
+Cl3 Cl1- 4 0.27970 0.13090 0.37250 1.0000
+Cl4 Cl1- 4 0.75070 0.39260 0.38452 1.0000
+Zr1 Zr4+ 4 0.42306 0.33410 0.50001 1.0000
+loop_
+_topol_atom.id
+_topol_atom.node_id
+_topol_atom.atom_label
+_topol_atom.element_symbol
+1 1 Cl1 Cl # Cl1
+2 2 Cl2 Cl # Cl2
+3 3 Cl3 Cl # Cl3
+4 4 Cl4 Cl # Cl4
+5 5 Zr1 Zr # Zr1
+loop_
+_topol_node.id
+_topol_node.label
+1 Cl1
+2 Cl2
+3 Cl3
+4 Cl4
+5 Zr1
+loop_
+_topol_link.node_id_1
+_topol_link.node_id_2
+_topol_link.distance
+_topol_link.symop_id_1
+_topol_link.translation_1_x
+_topol_link.translation_1_y
+_topol_link.translation_1_z
+_topol_link.symop_id_2
+_topol_link.translation_2_x
+_topol_link.translation_2_y
+_topol_link.translation_2_z
+_topol_link.type
+_topol_link.multiplicity
+_topol_link.voronoi_solid_angle
+1 5 2.3138 1 0 0 0 1 0 0 0 v 4 19.80 # Cl1 Zr1
+1 2 3.4945 1 0 0 0 4 0 1 0 vw 4 5.17 # Cl1 Cl2
+1 3 3.6297 1 0 0 0 2 1 0 0 vw 4 9.22 # Cl1 Cl3
+1 3 3.6473 1 0 0 0 3 0 0 0 vw 4 8.52 # Cl1 Cl3
+1 1 3.7010 1 0 0 0 4 -1 0 0 vw 4 8.44 # Cl1 Cl1
+1 2 3.7434 1 0 0 0 1 1 0 0 vw 4 7.74 # Cl1 Cl2
+1 4 3.7565 1 0 0 0 3 1 0 0 vw 4 8.09 # Cl1 Cl4
+1 3 3.8572 1 0 0 0 4 0 0 0 vw 4 6.81 # Cl1 Cl3
+1 2 3.8686 1 0 0 0 4 0 0 0 vw 4 6.79 # Cl1 Cl2
+2 5 2.4975 1 0 0 0 1 0 0 0 v 4 16.59 # Cl2 Zr1
+2 5 2.6598 1 0 0 0 4 -1 1 0 v 4 13.57 # Cl2 Zr1
+2 4 3.3174 1 0 0 0 4 -1 1 0 vw 4 3.36 # Cl2 Cl4
+2 4 3.4663 1 0 0 0 1 -1 0 0 vw 4 6.48 # Cl2 Cl4
+2 2 3.5129 1 0 0 0 4 0 1 0 vw 4 5.46 # Cl2 Cl2
+2 3 3.7190 1 0 0 0 3 0 0 0 vw 4 7.89 # Cl2 Cl3
+2 4 3.7427 1 0 0 0 2 1 1 0 vw 4 7.62 # Cl2 Cl4
+2 4 3.8823 1 0 0 0 3 0 0 0 vw 4 6.37 # Cl2 Cl4
+3 5 2.3127 1 0 0 0 1 0 0 0 v 4 19.79 # Cl3 Zr1
+3 4 3.5097 1 0 0 0 4 -1 1 0 vw 4 5.05 # Cl3 Cl4
+3 3 3.6618 1 0 0 0 4 -1 0 0 vw 4 8.79 # Cl3 Cl3
+3 4 3.8191 1 0 0 0 1 -1 0 0 vw 4 6.67 # Cl3 Cl4
+3 4 3.8545 1 0 0 0 4 -1 0 0 vw 4 6.90 # Cl3 Cl4
+4 5 2.5013 1 0 0 0 1 0 0 0 v 4 16.46 # Cl4 Zr1
+4 5 2.6630 1 0 0 0 4 0 1 0 v 4 13.52 # Cl4 Zr1
+4 4 3.4927 1 0 0 0 4 -1 1 0 vw 4 5.84 # Cl4 Cl4
+#End of data_36334-TOPOS_130654_ZrCl4
+
