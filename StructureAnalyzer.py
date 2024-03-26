@@ -1,8 +1,9 @@
 import itertools
 from collections import defaultdict
-from typing import List, Dict, Any
-from pathlib import Path
+from typing import List, Dict, Any, Union
 import copy
+from pathlib import Path
+import os
 
 import networkx as nx
 import pandas as pd
@@ -15,9 +16,11 @@ from pymatgen.analysis.dimensionality import get_dimensionality_larsen, get_stru
 
 import mendeleev
 
-
+# v3 BV_estimated_BOK_26-02-2024
+# v2 BV_estimated_ML_24-01-2024
+# v1 BV_estimated_ML_12-12-2023
 try:
-    excel_table_path = r'BV_estimated_24-01-2024.xlsx'
+    excel_table_path = r'C:/Users/pavel.zolotarev/Dropbox/2d/BV_estimated_ML_24-01-2024.xlsx'
     BVPARAMS = pd.read_excel(excel_table_path, index_col=0)\
                  .loc[:, ['bond', 'Atom1', 'Atom2', 'confident_prediction',
                           'Rcov_sum', 'delta', 'R0_estimated', 'R0_empirical', 'B']]
@@ -29,20 +32,22 @@ else:
 
 
 EN_dict = {el.symbol: el.electronegativity_allred_rochow() for el in mendeleev.get_all_elements()}
-EL_types_dict = {el.symbol: el.series for el in mendeleev.get_all_elements()}
-arbitrary_types = {
-    'Actinides': 'FM',
-    'Alkali metals': 'EPM',
-    'Alkaline earth metals': 'EPM',
-    'Halogens': 'NM',
-    'Lanthanides': 'FM',
-    'Metalloids': 'MTL',
-    'Noble gases': 'NG',
-    'Nonmetals': 'NM',
-    'Poor metals': 'ENM',
-    'Transition metals': 'TM'
-}
-EL_types_dict = {k: arbitrary_types[v] for k, v in EL_types_dict.items()}
+EL_types_dict = {el.symbol: el.symbol for el in mendeleev.get_all_elements()}
+
+# EL_types_dict = {el.symbol: el.series for el in mendeleev.get_all_elements()}
+# arbitrary_types = {
+#     'Actinides': 'FM',
+#     'Alkali metals': 'EPM',
+#     'Alkaline earth metals': 'EPM',
+#     'Halogens': 'NM',
+#     'Lanthanides': 'FM',
+#     'Metalloids': 'MTL',
+#     'Noble gases': 'NG',
+#     'Nonmetals': 'NM',
+#     'Poor metals': 'ENM',
+#     'Transition metals': 'TM'
+# }
+# EL_types_dict = {k: arbitrary_types[v] for k, v in EL_types_dict.items()}
 
 
 def get_BV(
@@ -85,7 +90,7 @@ def get_BV(
     else:
         R0 = np.nan
         B = np.nan
-        data_source = 'neither'
+        data_source = 'no_estimate'
 
     return np.exp((R0 - R) / B), data_source
 
@@ -191,6 +196,13 @@ class CrystalGraphAnalyzer:
             self.sg.graph.nodes[i]['element'] = self.sg.structure[i].specie.symbol
             self.sg.graph.nodes[i]['ELTYPE'] = EL_types_dict[self.sg.structure[i].specie.symbol]
             self.sg.graph.nodes[i]['EN'] = EN_dict[self.sg.structure[i].specie.symbol]
+        
+        crystal_graph_periodicity = get_dimensionality_larsen(self.sg)
+        if crystal_graph_periodicity < 3:
+            raise RuntimeError((f'(!!!) The crystal graph periodicity is {crystal_graph_periodicity} < 3 (!!!) '
+                                f'Try to decrease tol parameter in the VoronoiNN class instance '
+                                f'so that more interatomic contacts are identified'))
+
 
     def _get_threshold_weights(self) -> List[float]:
         """
@@ -242,7 +254,7 @@ class CrystalGraphAnalyzer:
 
                 if (
                     (self.bond_property in ('BV', 'SA', 'A') and edge_data['weight'] < threshold_weight) or
-                    (self.bond_property in ('R', ) and edge_data['weight'] > threshold_weight)
+                    (self.bond_property in ('R', )           and edge_data['weight'] > threshold_weight)
                 ):
                     broken_bond = '..'.join(
                         sorted([sg_copy.graph.nodes[node]['ELTYPE'] for node in (node1, node2)]))
@@ -378,7 +390,7 @@ class CrystalGraphAnalyzer:
         # BV sum AFTER restoring some INTRA fragment contacts
         self._restored_graph_total_bvs = sum([edge_data[2] for edge_data in self.sg_edited.graph.edges(data='BV')])
 
-    def output_subgraphs_data(self, save_fragments_to_cifs=True) -> Dict[str, Any]:
+    def output_subgraphs_data(self, save_fragments_to_cifs=True, save_fragments_path='./') -> Dict[str, Any]:
         """
         Output data for the obtained 1D/2D subgraphs (components or fragments) of the initial crystal graph.
 
@@ -427,9 +439,9 @@ class CrystalGraphAnalyzer:
                 if save_fragments_to_cifs:
                     if graph_data['periodicity'] in ('1D', '2D'):
                         graph_data['SG'].structure.to(
-                            (f"{self.graph_name}-{self.bond_property}-fragment_{i}-{graph_data['composition']}-"
-                             f"{graph_data['periodicity']}-{graph_data['orientation']}.cif"),
-                            fmt='cif')
+                            Path(save_fragments_path) / f"{self.graph_name}-{self.bond_property}-fragment_{i}-{graph_data['composition']}-"
+                            f"{graph_data['periodicity']}-{graph_data['orientation']}.cif", fmt='cif'
+                        )
                 del unique_fragments_dict[i]['SG']
 
             self._fragments = unique_fragments_dict
@@ -451,7 +463,7 @@ class CrystalGraphAnalyzerResult:
         target_periodicity_reached (bool): Whether the target periodicity was reached.
         input_file_name (str): Name of the input file.
         bond_property (str): The selected bond property.
-        monitor (pd.DataFrame): DataFrame with monitoring data.
+        monitor (pd.DataFrame): DataFrame with monitoring data stored at each crystal graph editing step.
         total_bvs (float): Total bond valence sum.
         fragments (dict): Dictionary of fragments.
         xbvs (float): Fraction of bond valence sum in the fragments.
@@ -501,7 +513,7 @@ class CrystalGraphAnalyzerResult:
             self.edited_graph_total_bvs = np.nan
             self.restored_graph_total_bvs = np.nan
 
-    def results_as_string(self) -> str:
+    def results_as_string(self) -> dict:
         """
         Get the results as a formatted string.
 
@@ -552,6 +564,40 @@ class CrystalGraphAnalyzerResult:
             list: List containing monitoring data.
         """
         return self.monitor
+    
+    def periodicity_partition(self, return_df=True) -> Union[pd.DataFrame, Dict]:
+        """
+        Estimate how the BVS is distributed among the fragments of a given periodicity (3-, 2-, 1-periodic fragmnets).
+        The algorithm identifies the contacts which correspond to specific periodicity of fragments
+        and assigns the BVS to a given periodicity. After that the BVSs assigned to each periodicities
+        are normalised and the returning vector reflects how many of the BVS is retained in the fragment with a given periodicity.
+
+        !!! IMPORTANT !!!
+        The TARGET_PERIODICITY parameter of the analyze_graph method in the CrystalGraphAnalyzer instance should be set to 0.
+        That is, the crystal graph analysis procedure stops when first 0-periodic fragment is reached
+        !!! IMPORTANT !!!
+
+        Returns:
+            pd.DataFrame: formatted dataframe for analysis of single structure
+            dict: dictionary with fragment periodicity as a key and share of BVS as a value
+        """
+        d = self.monitor.copy()
+        d['periodicity_change'] = (d['periodicity_before'] - d['periodicity_after']).astype(bool).astype(int)
+        d = d[d['periodicity_change'] == 1]
+        d['bv_periodicity_partition'] = -np.diff(d[d['periodicity_change'] == 1]['bvs_total_after_editing'], prepend=self.total_bvs)
+        d['bv_periodicity_partition_normalised'] = d['bv_periodicity_partition'] / d['bv_periodicity_partition'].sum()
+        d = d[['threshold_BV', 'periodicity_before', 'bv_periodicity_partition', 'bv_periodicity_partition_normalised']]
+
+        if return_df:
+            return d
+
+        else:
+            d_dict = d[['periodicity_before', 'bv_periodicity_partition_normalised']].set_index('periodicity_before').iloc[:, 0].to_dict()
+            d_dict['bv_periodicity_partition_STD'] = round(d['bv_periodicity_partition_normalised'].std(), 3)
+            d_dict['bv_periodicity_partition_RANGE'] = round(d['bv_periodicity_partition_normalised'].max() - d['bv_periodicity_partition_normalised'].min(), 3)
+            d_dict['input_file_name'] = self.input_file_name
+
+            return d_dict
 
     def results_as_dict(self) -> dict:
         """
