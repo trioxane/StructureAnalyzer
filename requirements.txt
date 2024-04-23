@@ -3,3 +3,4 @@ networkx==2.8.4
 numpy==1.21.6
 pandas==2.0.3
 pymatgen==2023.2.22
+plotly==5.9.0

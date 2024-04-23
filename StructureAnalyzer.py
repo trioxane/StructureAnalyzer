@@ -14,86 +14,7 @@ from pymatgen.analysis.graphs import StructureGraph
 from pymatgen.analysis.local_env import VoronoiNN
 from pymatgen.analysis.dimensionality import get_dimensionality_larsen, get_structure_components
 
-import mendeleev
-
-# v3 BV_estimated_BOK_26-02-2024
-# v2 BV_estimated_ML_24-01-2024
-# v1 BV_estimated_ML_12-12-2023
-try:
-    excel_table_path = r'C:/Users/pavel.zolotarev/Dropbox/2d/BV_estimated_ML_24-01-2024.xlsx'
-    BVPARAMS = pd.read_excel(excel_table_path, index_col=0)\
-                 .loc[:, ['bond', 'Atom1', 'Atom2', 'confident_prediction',
-                          'Rcov_sum', 'delta', 'R0_estimated', 'R0_empirical', 'B']]
-except FileNotFoundError:
-    print(f'excel table with BV parameters has not been found at '
-          f'{excel_table_path}')
-else:
-    pass
-
-
-EN_dict = {el.symbol: el.electronegativity_allred_rochow() for el in mendeleev.get_all_elements()}
-EL_types_dict = {el.symbol: el.symbol for el in mendeleev.get_all_elements()}
-
-# EL_types_dict = {el.symbol: el.series for el in mendeleev.get_all_elements()}
-# arbitrary_types = {
-#     'Actinides': 'FM',
-#     'Alkali metals': 'EPM',
-#     'Alkaline earth metals': 'EPM',
-#     'Halogens': 'NM',
-#     'Lanthanides': 'FM',
-#     'Metalloids': 'MTL',
-#     'Noble gases': 'NG',
-#     'Nonmetals': 'NM',
-#     'Poor metals': 'ENM',
-#     'Transition metals': 'TM'
-# }
-# EL_types_dict = {k: arbitrary_types[v] for k, v in EL_types_dict.items()}
-
-
-def get_BV(
-    args: tuple[float, str, str]
-) -> tuple[float, str]:
-    """
-    Get bond valence (BV) for a bond
-    between Atom1 (el1) and Atom2 (el2)
-    residing at R angstrom from each other
-
-    Args:
-
-        R - interatomic distance;
-        el1 - element 1 symbol;
-        el2 - element 2 symbol;
-    
-    Return:
-        
-        bond_valence, data_source
-    """
-    R, el1, el2 = args
-
-    empirical_bvs = BVPARAMS[
-        ((BVPARAMS['Atom1'] == el1) & (BVPARAMS['Atom2'] == el2))\
-      | ((BVPARAMS['Atom1'] == el2) & (BVPARAMS['Atom2'] == el1))
-    ]
-    
-    if empirical_bvs.shape[0] == 0:
-        return np.nan, 'no_estimate'
-
-    if empirical_bvs['R0_empirical'].notna().bool():
-        R0 = empirical_bvs.iat[0, 7] # use R0_empirical
-        B = empirical_bvs.iat[0, 8]
-        data_source = 'empirical_and_extrapolated'
-    elif empirical_bvs['R0_empirical'].isna().bool():
-        R0 = empirical_bvs.iat[0, 6] # use R0_estimated
-        B = 0.37
-        confidence = bool(empirical_bvs.iat[0, 3])
-        data_source = f'ML_estimated (confidence: {confidence})'
-    else:
-        R0 = np.nan
-        B = np.nan
-        data_source = 'no_estimate'
-
-    return np.exp((R0 - R) / B), data_source
-
+from utils import get_BV, EL_ARBITRARY_TYPES_DICT, EN_DICT, COVALENT_RADIUS_DICT, VDW_RADIUS_DICT
 
 
 class CrystalGraphAnalyzer:
@@ -103,7 +24,7 @@ class CrystalGraphAnalyzer:
     Args:
         file_name (str): The name of the CIF file.
         connectivity_calculator (VoronoiNN): An object of the VoronoiNN class for computing crystal connectivity.
-        bond_property (str): The selected bond property (one of the 'R', 'SA', 'A', 'BV') to be used as the weight of edges in the crystal graph.
+        bond_property (str): The selected bond property (one of the 'R', 'SA', 'A', 'BV', 'PI') to be used as the weight of edges in the crystal graph.
 
     Attributes:
         structure (Structure): The crystal structure.
@@ -129,7 +50,7 @@ class CrystalGraphAnalyzer:
         Args:
             file_name (str): The name of the input file.
             connectivity_calculator (VoronoiNN): An object of the VoronoiNN class for computing crystal connectivity.
-            bond_property (str): The selected bond property (one of the 'R', 'SA', 'A', 'BV') to be used as the weight of edges in the crystal graph.
+            bond_property (str): The selected bond property (one of the 'R', 'SA', 'A', 'BV', 'PI') to be used as the weight of edges in the crystal graph.
         """
         self.graph_name = Path(file_name).stem
         self.bond_property = bond_property
@@ -144,19 +65,21 @@ class CrystalGraphAnalyzer:
         self.target_periodicity_reached = False
 
         # update crystal graph edge data with selected bond property
+        self._suspicious_contacts = set()
         self._update_crystal_graph()
 
         self.inter_bvs = np.nan
         self.intra_bvs = np.nan
         self._edited_graph_total_bvs = np.nan
         self._restored_graph_total_bvs = np.nan
-        self.inter_contacts_atom_types = dict()
+        self.interfragment_contact_atoms = dict()
+        self.interfragment_contact_arbitrary_types = dict()
         self._inter_contacts_bv_estimate = dict()
         self._fragments = dict()
         self.total_bvs = sum([edge_data[2] for edge_data in self.sg.graph.edges(data='BV')])
 
 
-    def _add_weight_to_graph_edges(self, site_n: int, neighbor: Dict) -> None:
+    def _add_weight_to_graph_edges(self, site_n: int, neighbor: Dict, BV_SUSPICIOUS_THRESHOLD=8) -> None:
         """
         Add an edge weight to the crystal graph based on the information from the VoronoiNN calculation.
 
@@ -168,9 +91,16 @@ class CrystalGraphAnalyzer:
         A = neighbor['poly_info']['area']
         R = neighbor['poly_info']['face_dist'] * 2
         SA = neighbor['poly_info']['solid_angle']
+        # on PI >>> https://pubs.rsc.org/en/content/articlehtml/2023/sc/d3sc02238b
+        PI = 100 * (VDW_RADIUS_DICT[central_atom] + VDW_RADIUS_DICT[neighbour_atom] - R)\
+            / ( (VDW_RADIUS_DICT[central_atom]   - COVALENT_RADIUS_DICT[central_atom])\
+              + (VDW_RADIUS_DICT[neighbour_atom] - COVALENT_RADIUS_DICT[neighbour_atom]) )
         BV, BV_calc_method = get_BV((R, central_atom, neighbour_atom))
+        
+        if BV > BV_SUSPICIOUS_THRESHOLD:
+            self._suspicious_contacts.add(f'{central_atom}-{neighbour_atom} {R:.3f}A {BV:.1f}vu')
 
-        edge_properties = {'BV': BV, 'BV_calc_method': BV_calc_method, 'R': R, 'A': A, 'SA': SA}
+        edge_properties = {'BV': BV, 'BV_calc_method': BV_calc_method, 'R': R, 'A': A, 'SA': SA, 'PI': PI}
         weight = edge_properties[self.bond_property]
 
         self.sg.add_edge(
@@ -194,27 +124,28 @@ class CrystalGraphAnalyzer:
         # add attributes to graph nodes
         for i, node in enumerate(self.sg.graph.nodes):
             self.sg.graph.nodes[i]['element'] = self.sg.structure[i].specie.symbol
-            self.sg.graph.nodes[i]['ELTYPE'] = EL_types_dict[self.sg.structure[i].specie.symbol]
-            self.sg.graph.nodes[i]['EN'] = EN_dict[self.sg.structure[i].specie.symbol]
+            self.sg.graph.nodes[i]['ELTYPE_ARB'] = EL_ARBITRARY_TYPES_DICT[self.sg.structure[i].specie.symbol]
+            self.sg.graph.nodes[i]['EN'] = EN_DICT[self.sg.structure[i].specie.symbol]
         
         crystal_graph_periodicity = get_dimensionality_larsen(self.sg)
         if crystal_graph_periodicity < 3:
             raise RuntimeError((f'(!!!) The crystal graph periodicity is {crystal_graph_periodicity} < 3 (!!!) '
-                                f'Try to decrease tol parameter in the VoronoiNN class instance '
+                                f'Possible reasons - the crystal structure could be unreasonable and suspicious or '
+                                f'try to decrease tol parameter in the VoronoiNN class instance '
                                 f'so that more interatomic contacts are identified'))
 
 
-    def _get_threshold_weights(self) -> List[float]:
+    def _get_threshold_weights(self, merge_close_weights=False) -> List[float]:
         """
         Return a list with sorted threshold values for graph editing
         by cutting edges with weights higher/smaller than threshold
         """
-        DELTA = {'R': 0.01, 'BV': 0.001, 'SA': 0.01, 'A': 0.1}
-        DECIMALS = {'R': 2, 'BV': 3, 'SA': 2, 'A': 1}
+        DELTA = {'R': 0.01, 'BV': 0.001, 'SA': 0.01, 'A': 0.1, 'PI': 0.1}
+        DECIMALS = {'R': 2, 'BV': 3, 'SA': 2, 'A': 1, 'PI': 1}
         delta = DELTA[self.bond_property]
         decimals = DECIMALS[self.bond_property]
 
-        if self.bond_property in ('BV', 'SA', 'A'):
+        if self.bond_property in ('BV', 'SA', 'A', 'PI'):
             reverse = False # higher values correspond to stronger bonding
             delta = delta
         else: # for 'R'
@@ -225,9 +156,10 @@ class CrystalGraphAnalyzer:
         unique_weights = np.array([w + delta for w in unique_weights])
 
         # merge too close weights
-        # diff = np.ediff1d(unique_weights)
-        # indices = np.where(np.abs(diff) < delta + 10**-decimals)
-        # unique_weights = np.array([v for v in unique_weights if v not in unique_weights[indices]])
+        if merge_close_weights:
+            diff = np.ediff1d(unique_weights)
+            indices = np.where(np.abs(diff) < delta + 10**-decimals)
+            unique_weights = np.array([v for v in unique_weights if v not in unique_weights[indices]])
 
         return unique_weights
 
@@ -253,13 +185,17 @@ class CrystalGraphAnalyzer:
                 node1, node2, edge_data = edge
 
                 if (
-                    (self.bond_property in ('BV', 'SA', 'A') and edge_data['weight'] < threshold_weight) or
-                    (self.bond_property in ('R', )           and edge_data['weight'] > threshold_weight)
+                    (self.bond_property in ('BV', 'SA', 'A', 'PI') and edge_data['weight'] < threshold_weight) or
+                    (self.bond_property in ('R', )                 and edge_data['weight'] > threshold_weight)
                 ):
                     broken_bond = '..'.join(
-                        sorted([sg_copy.graph.nodes[node]['ELTYPE'] for node in (node1, node2)]))
+                        sorted([sg_copy.graph.nodes[node]['element'] for node in (node1, node2)]))
+                    broken_bond_arb = '..'.join(
+                        sorted([sg_copy.graph.nodes[node]['ELTYPE_ARB'] for node in (node1, node2)]))
                     edges_to_remove.append((node1, node2, edge_data['to_jimage']))
-                    deleted_contacts.append(((node1, node2, edge_data['to_jimage']), edge_data, broken_bond))
+                    deleted_contacts.append(
+                        ((node1, node2, edge_data['to_jimage']), edge_data, broken_bond, broken_bond_arb)
+                    )
 
             for edge_to_remove in edges_to_remove:
                 sg_copy.break_edge(*edge_to_remove)
@@ -277,7 +213,9 @@ class CrystalGraphAnalyzer:
                 self.threshold_weight = threshold_weight
                 self.deleted_contacts = deleted_contacts
                 self.monitor = pd.DataFrame(
-                    monitor, columns=[f'threshold_{self.bond_property}', 'periodicity_before', 'periodicity_after', 'N_edges_to_remove', 'bvs_total_after_editing'])
+                    monitor,
+                    columns=[f'threshold_{self.bond_property}', 'periodicity_before', 'periodicity_after', 'N_edges_to_remove', 'bvs_total_after_editing']
+                )
                 break
             elif periodicity_after < target_periodicity:
                 break
@@ -316,7 +254,14 @@ class CrystalGraphAnalyzer:
         return {i: g_dict for i, g_dict in enumerate(unique_graphs, 1)}
 
     def _calculate_fragment_charges(self, fragments_dict: Dict, inter_contacts: set, fragment_sites_dict: Dict):
+        """
+        Estimate fragment charge using the EN difference of the atoms in the interfragment contact.
+        Atom with higher EN belonging to the fragment contributes the partial negative charge to that
+        fragment amounting to contact BV value; atom with lower EN contributes the partial positive
+        charge to that fragment, respectively.
+        """
 
+        EPSILON = 1e-6
         complete_fragments_dict = {}
 
         if len(fragment_sites_dict) == 1:
@@ -334,11 +279,12 @@ class CrystalGraphAnalyzer:
                 node1, node2, _ = inter_contact
                 contact_bv = contacts_bv[inter_contact]
                 en_difference = node_ens[node1] - node_ens[node2]
-                # print(inter_contact, contact_bv, en_difference)
-                if en_difference > 0:
+                # print(sg.structure[node1].specie.symbol, sg.structure[node2].specie.symbol,
+                #       inter_contact, contact_bv, en_difference)
+                if en_difference > EPSILON:
                     fragment_charges[site_fragments_dict[node1]] -= contact_bv
                     fragment_charges[site_fragments_dict[node2]] += contact_bv
-                elif en_difference < 0:
+                elif en_difference < -EPSILON:
                     fragment_charges[site_fragments_dict[node1]] += contact_bv
                     fragment_charges[site_fragments_dict[node2]] -= contact_bv
                 else:
@@ -368,7 +314,7 @@ class CrystalGraphAnalyzer:
         # iterate over broken INTRA contacts and if the periodicity does not increase
         # restore this contact in a given fragment
         for broken_edge_data in intra_contacts_to_restore:
-            (n1, n2, translation), edge_data, _ = broken_edge_data
+            (n1, n2, translation), edge_data, _, _ = broken_edge_data
             test_graph = copy.copy(self.sg_edited)
             test_graph.add_edge(
                 n1,
@@ -392,7 +338,7 @@ class CrystalGraphAnalyzer:
 
     def output_subgraphs_data(self, save_fragments_to_cifs=True, save_fragments_path='./') -> Dict[str, Any]:
         """
-        Output data for the obtained 1D/2D subgraphs (components or fragments) of the initial crystal graph.
+        Output data for the obtained 1-p/2-p subgraphs (components or fragments) of the initial crystal graph.
 
         Returns:
             Dict[int, List[int]]: Dictionary containing information on the sites being part of the obtained fragments.
@@ -406,7 +352,7 @@ class CrystalGraphAnalyzer:
             for i, component in enumerate(
                 get_structure_components(self.sg_edited, inc_orientation=True, inc_site_ids=True)
             ):
-                periodicity = f"{component['dimensionality']}D"
+                periodicity = str(component['dimensionality'])
                 SG = component['structure_graph']
                 sites_data = component['site_ids']
                 orientation = component['orientation'] if component['orientation'] is not None else periodicity
@@ -424,23 +370,27 @@ class CrystalGraphAnalyzer:
             inter_contacts = self.sg.diff(self.sg_edited)['self']
             # estimate fragment charges using edited and restored graph
             fragment_dict = self._calculate_fragment_charges(fragment_dict, inter_contacts, fragment_sites_dict)
-            inter_contacts_atom_types = [c[2] for c in self.deleted_contacts if c[0] in inter_contacts]
+            interfragment_contact_atoms = [c[2] for c in self.deleted_contacts if c[0] in inter_contacts]
+            interfragment_contact_arbitrary_types = [c[3] for c in self.deleted_contacts if c[0] in inter_contacts]
             inter_contacts_bv_estimate = [c[1]['BV_calc_method'] for c in self.deleted_contacts if c[0] in inter_contacts]
 
             self.intra_bvs = sum([e[2] for e in self.sg_edited.graph.edges(data='BV')])
             self.inter_bvs = self.total_bvs - self.intra_bvs
-            self.inter_contacts_atom_types = pd.Series(inter_contacts_atom_types).value_counts().to_dict()
-            self._inter_contacts_bv_estimate = pd.Series(inter_contacts_bv_estimate).value_counts(normalize=True).to_dict()
+            self.interfragment_contact_atoms = pd.Series(interfragment_contact_atoms).value_counts().to_dict()
+            self.interfragment_contact_arbitrary_types = pd.Series(interfragment_contact_arbitrary_types).value_counts().to_dict()
+            self._inter_contacts_bv_estimate = pd.Series(inter_contacts_bv_estimate).value_counts(normalize=True)\
+                                                                                    .apply(lambda v: round(v, 4))\
+                                                                                    .to_dict()
 
             # filter out duplicated fragment graphs
             unique_fragments_dict = self._get_unique_fragments(fragment_dict)
             # store unique fragments into cif files if required
             for i, graph_data in unique_fragments_dict.items():
                 if save_fragments_to_cifs:
-                    if graph_data['periodicity'] in ('1D', '2D'):
+                    if graph_data['periodicity'] in ('1', '2'):
                         graph_data['SG'].structure.to(
                             Path(save_fragments_path) / f"{self.graph_name}-{self.bond_property}-fragment_{i}-{graph_data['composition']}-"
-                            f"{graph_data['periodicity']}-{graph_data['orientation']}.cif", fmt='cif'
+                            f"{graph_data['periodicity']}periodic-{graph_data['orientation']}.cif", fmt='cif'
                         )
                 del unique_fragments_dict[i]['SG']
 
@@ -469,7 +419,9 @@ class CrystalGraphAnalyzerResult:
         xbvs (float): Fraction of bond valence sum in the fragments.
         mean_inter_bv (float): Mean bond valence of contacts between fragments.
         inter_bvs_per_interface (float): Bond valence sum per interface.
-        inter_contacts_atom_types (dict): Atom types involved in inter-fragment contacts.
+        interfragment_contact_atoms (dict): Atom types involved in inter-fragment contacts.
+        interfragment_contact_arbitrary_types (dict): Arbitrary atom types involved in inter-fragment contacts;
+            elements are grouped according to EL_ARBITRARY_TYPES_DICT (element_data.py).
         inter_contacts_bv_estimate (dict): Estimated bond valence for inter-fragment contacts.
         intra_bvs (float): Intra-fragment bond valence sum.
         inter_bvs (float): Inter-fragment bond valence sum.
@@ -489,13 +441,15 @@ class CrystalGraphAnalyzerResult:
         self.bond_property = analyzer_instance.bond_property
         self.monitor = analyzer_instance.monitor
         self.total_bvs = analyzer_instance.total_bvs
+        self._suspicious_contacts = analyzer_instance._suspicious_contacts
 
         if analyzer_instance.target_periodicity_reached:
             self.fragments = analyzer_instance._fragments
             self.xbvs = (analyzer_instance.total_bvs - analyzer_instance.inter_bvs) / analyzer_instance.total_bvs
-            self.mean_inter_bv = analyzer_instance.inter_bvs / sum(analyzer_instance.inter_contacts_atom_types.values())
+            self.mean_inter_bv = analyzer_instance.inter_bvs / sum(analyzer_instance.interfragment_contact_atoms.values())
             self.inter_bvs_per_interface = analyzer_instance.inter_bvs / len(analyzer_instance._fragments)
-            self.inter_contacts_atom_types = analyzer_instance.inter_contacts_atom_types
+            self.interfragment_contact_atoms = analyzer_instance.interfragment_contact_atoms
+            self.interfragment_contact_arbitrary_types = analyzer_instance.interfragment_contact_arbitrary_types
             self.inter_contacts_bv_estimate = analyzer_instance._inter_contacts_bv_estimate
             self.intra_bvs = analyzer_instance.intra_bvs
             self.inter_bvs = analyzer_instance.inter_bvs
@@ -506,7 +460,8 @@ class CrystalGraphAnalyzerResult:
             self.xbvs = np.nan
             self.mean_inter_bv = np.nan
             self.inter_bvs_per_interface = np.nan
-            self.inter_contacts_atom_types = {}
+            self.interfragment_contact_atoms = {}
+            self.interfragment_contact_arbitrary_types = {}
             self.inter_contacts_bv_estimate = {}
             self.intra_bvs = np.nan
             self.inter_bvs = np.nan
@@ -528,10 +483,12 @@ class CrystalGraphAnalyzerResult:
             'xbvs': np.round(self.xbvs, 4),
             'mean_inter_bv': np.round(self.mean_inter_bv, 4),
             'inter_bvs_per_interface': np.round(self.inter_bvs_per_interface, 4),
-            'inter_contacts_atom_types': self.inter_contacts_atom_types,
-            'inter_contacts_bv_estimate': self.inter_contacts_bv_estimate,
+            'interfragment_contact_atoms': self.interfragment_contact_atoms,
+            'interfragment_contact_arbitrary_types': self.interfragment_contact_arbitrary_types,
+            'inter_contacts_bv_estimate':  self.inter_contacts_bv_estimate,
+            'suspicious_contacts': '|'.join(sorted(self._suspicious_contacts))
         }
-    
+
         formatted_string = ""
         for key, value in results_dict.items():
             formatted_string += f"{key}: {value}\n"
@@ -564,7 +521,7 @@ class CrystalGraphAnalyzerResult:
             list: List containing monitoring data.
         """
         return self.monitor
-    
+
     def periodicity_partition(self, return_df=True) -> Union[pd.DataFrame, Dict]:
         """
         Estimate how the BVS is distributed among the fragments of a given periodicity (3-, 2-, 1-periodic fragmnets).
@@ -574,32 +531,33 @@ class CrystalGraphAnalyzerResult:
 
         !!! IMPORTANT !!!
         The TARGET_PERIODICITY parameter of the analyze_graph method in the CrystalGraphAnalyzer instance should be set to 0.
-        That is, the crystal graph analysis procedure stops when first 0-periodic fragment is reached
+        That is, the crystal graph analysis procedure stops when maximum periodicity of the fragments reached is 0
         !!! IMPORTANT !!!
 
         Returns:
             pd.DataFrame: formatted dataframe for analysis of single structure
             dict: dictionary with fragment periodicity as a key and share of BVS as a value
         """
-        d = self.monitor.copy()
-        d['periodicity_change'] = (d['periodicity_before'] - d['periodicity_after']).astype(bool).astype(int)
-        d = d[d['periodicity_change'] == 1]
-        d['bv_periodicity_partition'] = -np.diff(d[d['periodicity_change'] == 1]['bvs_total_after_editing'], prepend=self.total_bvs)
-        d['bv_periodicity_partition_normalised'] = d['bv_periodicity_partition'] / d['bv_periodicity_partition'].sum()
-        d = d[['threshold_BV', 'periodicity_before', 'bv_periodicity_partition', 'bv_periodicity_partition_normalised']]
+        df = self.monitor.copy()
+        df['periodicity_change'] = (df['periodicity_before'] - df['periodicity_after']).astype(bool).astype(int)
+        df = df[df['periodicity_change'] == 1]
+        df['bv_periodicity_partition'] = -np.diff(
+            df[df['periodicity_change'] == 1]['bvs_total_after_editing'], prepend=self.total_bvs
+        )
+        df['bv_periodicity_partition_normalised'] = df['bv_periodicity_partition'] / df['bv_periodicity_partition'].sum()
+        df = df[['threshold_BV', 'periodicity_before', 'bv_periodicity_partition', 'bv_periodicity_partition_normalised']]
 
         if return_df:
-            return d
-
+            return df
         else:
-            d_dict = d[['periodicity_before', 'bv_periodicity_partition_normalised']].set_index('periodicity_before').iloc[:, 0].to_dict()
-            d_dict['bv_periodicity_partition_STD'] = round(d['bv_periodicity_partition_normalised'].std(), 3)
-            d_dict['bv_periodicity_partition_RANGE'] = round(d['bv_periodicity_partition_normalised'].max() - d['bv_periodicity_partition_normalised'].min(), 3)
-            d_dict['input_file_name'] = self.input_file_name
+            df_dict = df[['periodicity_before', 'bv_periodicity_partition_normalised']].set_index('periodicity_before').iloc[:, 0].to_dict()
+            df_dict['bv_periodicity_partition_STD'] = round(df['bv_periodicity_partition_normalised'].std(), 3)
+            df_dict['bv_periodicity_partition_RANGE'] = round(df['bv_periodicity_partition_normalised'].max() - df['bv_periodicity_partition_normalised'].min(), 3)
+            df_dict['input_file_name'] = self.input_file_name
 
-            return d_dict
+            return df_dict
 
-    def results_as_dict(self) -> dict:
+    def results_as_dict(self) -> Dict:
         """
         Get the results as a dictionary.
 
@@ -622,8 +580,11 @@ class CrystalGraphAnalyzerResult:
             "xbvs": self.xbvs,
             "mean_inter_bv": self.mean_inter_bv,
             "inter_bvs_per_interface": self.inter_bvs_per_interface,
-            "inter_contacts_atom_types": '|'.join(sorted(self.inter_contacts_atom_types.keys())),
-            "inter_contacts_atom_types_full": str(self.inter_contacts_atom_types),
+            "interfragment_contact_atoms": '|'.join(sorted(self.interfragment_contact_atoms.keys())),
+            "interfragment_contact_atoms_full": str(self.interfragment_contact_atoms),
+            "interfragment_contact_arbitrary_types": '|'.join(sorted(self.interfragment_contact_arbitrary_types.keys())),
+            "interfragment_contact_arbitrary_types_full": str(self.interfragment_contact_arbitrary_types),
             "inter_contacts_bv_estimate_(tentative_share)": self.inter_contacts_bv_estimate.get('ML_estimated (confidence: False)', 0.0),
             "inter_contacts_bv_estimate_full": str(self.inter_contacts_bv_estimate),
+            'suspicious_contacts': '|'.join(sorted(self._suspicious_contacts)),
         }
