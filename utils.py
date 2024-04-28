@@ -32,28 +32,74 @@ VDW_RADIUS_DICT = {
     for el in mendeleev.get_all_elements()[:100]
 }
 
-arbitrary_types = {
-    'Actinides': 'FM',
-    'Alkali metals': 'EPM',
-    'Alkaline earth metals': 'EPM',
-    'Halogens': 'NM',
-    'Lanthanides': 'FM',
-    'Metalloids': 'MTL',
-    'Noble gases': 'NG',
-    'Nonmetals': 'NM',
-    'Poor metals': 'ENM',
-    'Transition metals': 'TM'
-}
-EL_ARBITRARY_TYPES_DICT = {el.symbol: arbitrary_types[el.series] for el in mendeleev.get_all_elements()}
+def get_arbitrary_types_dict(mode=1) -> dict:
+    """
+    mode == 1:
+        'ENM': 'Al Ga In Sn Tl Pb Bi Nh Fl Mc Lv',
+        'EPM': 'Li Be Na Mg K Ca Rb Sr Cs Ba Fr Ra',
+        'FM': 'La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb  Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No',
+        'MTL': 'B Si Ge As Sb Te Po',
+        'NG': 'He Ne Ar Kr Xe Rn Og',
+        'NM': 'H C N O F P S Cl Se Br I At Ts',
+        'TM': 'Sc Ti V Cr Mn Fe Co Ni Cu Zn  Y Zr Nb Mo Tc Ru Rh Pd Ag Cd  Lu Hf Ta W Re Os Ir Pt Au Hg  Lr Rf Db Sg Bh Hs Mt Ds Rg Cn'
 
-# EL_ARBITRARY_TYPES_DICT:
-    # 'ENM': 'Al Ga In Sn Tl Pb Bi Nh Fl Mc Lv',
-    # 'EPM': 'Li Be Na Mg K Ca Rb Sr Cs Ba Fr Ra',
-    # 'FM': 'La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb  Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No',
-    # 'MTL': 'B Si Ge As Sb Te Po',
-    # 'NG': 'He Ne Ar Kr Xe Rn Og',
-    # 'NM': 'H C N O F P S Cl Se Br I At Ts',
-    # 'TM': 'Sc Ti V Cr Mn Fe Co Ni Cu Zn  Y Zr Nb Mo Tc Ru Rh Pd Ag Cd  Lu Hf Ta W Re Os Ir Pt Au Hg  Lr Rf Db Sg Bh Hs Mt Ds Rg Cn'
+    mode == 2:
+        See "periodic_table" dict
+    
+    Return: dict
+    """
+
+    if mode == 1:
+
+        arbitrary_types = {
+            'Actinides': 'FM',
+            'Alkali metals': 'EPM',
+            'Alkaline earth metals': 'EPM',
+            'Halogens': 'NM',
+            'Lanthanides': 'FM',
+            'Metalloids': 'MTL',
+            'Noble gases': 'NG',
+            'Nonmetals': 'NM',
+            'Poor metals': 'ENM',
+            'Transition metals': 'TM'
+        }
+
+        EL_ARBITRARY_TYPES_DICT = {el.symbol: arbitrary_types[el.series] for el in mendeleev.get_all_elements()}
+
+    else:
+
+        periodic_table = {
+            # Period 1
+            "H": "H",  "He": "NG",
+            # Period 2
+            "Li": "EPM", "Be": "ENM", "B": "MTL", "C": "LNM", "N": "LNM", "O": "LNM", "F": "LNM", "Ne": "NG",
+            # Period 3
+            "Na": "EPM", "Mg": "EPM", "Al": "ENM", "Si": "MTL", "P": "NM", "S": "NM", "Cl": "NM", "Ar": "NG",
+            # Period 4
+            "K": "EPM",  "Ca": "EPM",
+            "Sc": "TM", "Ti": "TM", "V": "TM", "Cr": "TM", "Mn": "TM", "Fe": "TM", "Co": "TM", "Ni": "TM", "Cu": "TM", "Zn": "TM",
+            "Ga": "ENM", "Ge": "MTL", "As": "MTL", "Se": "NM", "Br": "NM",  "Kr": "NG",
+            # Period 5
+            "Rb": "EPM", "Sr": "EPM",
+            "Y": "TM", "Zr": "TM", "Nb": "TM", "Mo": "TM", "Tc": "TM", "Ru": "TM", "Rh": "TM", "Pd": "TM", "Ag": "TM", "Cd": "TM",
+            "In": "ENM", "Sn": "ENM", "Sb": "MTL", "Te": "MTL", "I": "NM", "Xe": "NG",
+            # Period 6
+            "Cs": "EPM", "Ba": "EPM",
+            "La": "FM", "Ce": "FM", "Pr": "FM", "Nd": "FM", "Pm": "FM", "Sm": "FM", "Eu": "FM",
+            "Gd": "FM", "Tb": "FM", "Dy": "FM", "Ho": "FM", "Er": "FM", "Tm": "FM", "Yb": "FM", "Lu": "FM",
+            "Hf": "TM", "Ta": "TM", "W": "TM",  "Re": "TM", "Os": "TM", "Ir": "TM", "Pt": "TM", "Au": "TM", "Hg": "TM",
+            "Tl": "ENM", "Pb": "ENM", "Bi": "ENM", "Po": "MTL", "At": "NM", "Rn": "NG",
+            # Period 7
+            "Fr": "EPM", "Ra": "EPM",
+            "Ac": "FM", "Th": "FM", "Pa": "FM", "U": "FM", "Np": "FM", "Pu": "FM", "Am": "FM",
+            "Cm": "FM", "Bk": "FM", "Cf": "FM", "Es": "FM", "Fm": "FM", "Md": "FM", "No": "FM", "Lr": "FM",
+            "Rf": "TM", "Db": "TM", "Sg": "TM", "Bh": "TM", "Hs": "TM", "Mt": "TM", "Ds": "TM", "Rg": "TM", "Cn": "TM",
+            "Nh": "ENM", "Fl": "ENM", "Mc": "ENM", "Lv": "ENM", "Ts": "NM", "Og": "NG"
+        }
+
+        EL_ARBITRARY_TYPES_DICT = {el.symbol: periodic_table[el.symbol] for el in mendeleev.get_all_elements()}
+
+    return EL_ARBITRARY_TYPES_DICT
 
 
 def get_BV(args: tuple[float, str, str]) -> tuple[float, str]:

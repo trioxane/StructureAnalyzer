@@ -14,7 +14,7 @@ from pymatgen.analysis.graphs import StructureGraph
 from pymatgen.analysis.local_env import VoronoiNN
 from pymatgen.analysis.dimensionality import get_dimensionality_larsen, get_structure_components
 
-from utils import get_BV, EL_ARBITRARY_TYPES_DICT, EN_DICT, COVALENT_RADIUS_DICT, VDW_RADIUS_DICT
+from utils import get_BV, get_arbitrary_types_dict, EN_DICT, COVALENT_RADIUS_DICT, VDW_RADIUS_DICT
 
 
 class CrystalGraphAnalyzer:
@@ -25,6 +25,7 @@ class CrystalGraphAnalyzer:
         file_name (str): The name of the CIF file.
         connectivity_calculator (VoronoiNN): An object of the VoronoiNN class for computing crystal connectivity.
         bond_property (str): The selected bond property (one of the 'R', 'SA', 'A', 'BV', 'PI') to be used as the weight of edges in the crystal graph.
+        arbitrary_element_types (int): 1 or 2 two different element classifications used when classifying the interfragment contacts
 
     Attributes:
         structure (Structure): The crystal structure.
@@ -43,6 +44,7 @@ class CrystalGraphAnalyzer:
         file_name: str,
         connectivity_calculator: VoronoiNN,
         bond_property: str = 'BV',
+        arbitrary_element_types: int = 2,
     ) -> None:
         """
         Initialize the CrystalGraphAnalyzer.
@@ -66,6 +68,7 @@ class CrystalGraphAnalyzer:
 
         # update crystal graph edge data with selected bond property
         self._suspicious_contacts = set()
+        self.arbitrary_types_dict = get_arbitrary_types_dict(mode=arbitrary_element_types)
         self._update_crystal_graph()
 
         self.inter_bvs = np.nan
@@ -98,7 +101,7 @@ class CrystalGraphAnalyzer:
         BV, BV_calc_method = get_BV((R, central_atom, neighbour_atom))
         
         if BV > BV_SUSPICIOUS_THRESHOLD:
-            self._suspicious_contacts.add(f'{central_atom}-{neighbour_atom} {R:.3f}A {BV:.1f}vu')
+            self._suspicious_contacts.add(f'{central_atom}-{neighbour_atom} {R:.3f}A {BV:.1f} vu')
 
         edge_properties = {'BV': BV, 'BV_calc_method': BV_calc_method, 'R': R, 'A': A, 'SA': SA, 'PI': PI}
         weight = edge_properties[self.bond_property]
@@ -124,7 +127,7 @@ class CrystalGraphAnalyzer:
         # add attributes to graph nodes
         for i, node in enumerate(self.sg.graph.nodes):
             self.sg.graph.nodes[i]['element'] = self.sg.structure[i].specie.symbol
-            self.sg.graph.nodes[i]['ELTYPE_ARB'] = EL_ARBITRARY_TYPES_DICT[self.sg.structure[i].specie.symbol]
+            self.sg.graph.nodes[i]['ELTYPE_ARB'] = self.arbitrary_types_dict[self.sg.structure[i].specie.symbol]
             self.sg.graph.nodes[i]['EN'] = EN_DICT[self.sg.structure[i].specie.symbol]
         
         crystal_graph_periodicity = get_dimensionality_larsen(self.sg)
@@ -133,7 +136,6 @@ class CrystalGraphAnalyzer:
                                 f'Possible reasons - the crystal structure could be unreasonable and suspicious or '
                                 f'try to decrease tol parameter in the VoronoiNN class instance '
                                 f'so that more interatomic contacts are identified'))
-
 
     def _get_threshold_weights(self, merge_close_weights=False) -> List[float]:
         """
@@ -162,7 +164,6 @@ class CrystalGraphAnalyzer:
             unique_weights = np.array([v for v in unique_weights if v not in unique_weights[indices]])
 
         return unique_weights
-
 
     def analyze_graph(self, target_periodicity: int) -> None:
         """
@@ -297,7 +298,6 @@ class CrystalGraphAnalyzer:
 
         return complete_fragments_dict
 
-
     def _restore_fragment_graph(self, fragment_sites_dict: Dict) -> None:
         """
         Restore some intra fragment contacts
@@ -401,7 +401,6 @@ class CrystalGraphAnalyzer:
         return result_instance
 
 
-
 class CrystalGraphAnalyzerResult:
     """
     A class to store the results of crystal graph analysis.
@@ -421,7 +420,7 @@ class CrystalGraphAnalyzerResult:
         inter_bvs_per_interface (float): Bond valence sum per interface.
         interfragment_contact_atoms (dict): Atom types involved in inter-fragment contacts.
         interfragment_contact_arbitrary_types (dict): Arbitrary atom types involved in inter-fragment contacts;
-            elements are grouped according to EL_ARBITRARY_TYPES_DICT (element_data.py).
+            elements are grouped according to self.arbitrary_types_dict (utils.py).
         inter_contacts_bv_estimate (dict): Estimated bond valence for inter-fragment contacts.
         intra_bvs (float): Intra-fragment bond valence sum.
         inter_bvs (float): Inter-fragment bond valence sum.
