@@ -1,5 +1,5 @@
 import itertools
-from collections import defaultdict
+from collections import defaultdict, Counter
 from typing import List, Dict, Any, Union
 import copy
 from pathlib import Path
@@ -204,7 +204,7 @@ class CrystalGraphAnalyzer:
             periodicity_after = get_dimensionality_larsen(sg_copy)
             bvs_total_after_editing = sum([edge_data[2] for edge_data in sg_copy.graph.edges(data='BV')])
             monitor.append(
-                [threshold_weight, periodicity_before, periodicity_after, len(edges_to_remove), bvs_total_after_editing]
+                [threshold_weight, broken_bond, periodicity_before, periodicity_after, len(edges_to_remove), bvs_total_after_editing]
             )
 
             if periodicity_after == target_periodicity:
@@ -215,14 +215,15 @@ class CrystalGraphAnalyzer:
                 self.deleted_contacts = deleted_contacts
                 self.monitor = pd.DataFrame(
                     monitor,
-                    columns=[f'threshold_{self.bond_property}', 'periodicity_before', 'periodicity_after', 'N_edges_to_remove', 'bvs_total_after_editing']
+                    columns=[f'threshold_{self.bond_property}', 'broken_bond', 'periodicity_before', 'periodicity_after', 'N_edges_to_remove', 'bvs_total_after_editing']
                 )
                 break
             elif periodicity_after < target_periodicity:
+                self.monitor = pd.DataFrame(
+                    monitor,
+                    columns=[f'threshold_{self.bond_property}', 'broken_bond', 'periodicity_before', 'periodicity_after', 'N_edges_to_remove', 'bvs_total_after_editing']
+                )
                 break
-
-        self.monitor = pd.DataFrame(
-            monitor, columns=[f'threshold_{self.bond_property}', 'periodicity_before', 'periodicity_after', 'N_edges_to_remove', 'bvs_total_after_editing'])
 
         return None
 
@@ -235,6 +236,9 @@ class CrystalGraphAnalyzer:
         edge_matcher = nx.algorithms.isomorphism.numerical_multiedge_match(attr='R', default=1.0, atol=1e-3)
 
         graph_list = list(graph_dict.values())
+        self._fragments_per_cell_count = len(graph_list)
+        fragments_per_cell_formula = [cg.get('composition', '') for cg in graph_list]
+        self._fragments_per_cell_formula = '_'.join([f"({specie}){counts}" for specie, counts in Counter(fragments_per_cell_formula).items()])
 
         unique_graphs = []
         for i in range(len(graph_list)):
@@ -444,9 +448,11 @@ class CrystalGraphAnalyzerResult:
 
         if analyzer_instance.target_periodicity_reached:
             self.fragments = analyzer_instance._fragments
+            self.fragments_per_cell_count = analyzer_instance._fragments_per_cell_count
+            self.fragments_per_cell_formula = analyzer_instance._fragments_per_cell_formula
             self.xbvs = (analyzer_instance.total_bvs - analyzer_instance.inter_bvs) / analyzer_instance.total_bvs
             self.mean_inter_bv = analyzer_instance.inter_bvs / sum(analyzer_instance.interfragment_contact_atoms.values())
-            self.inter_bvs_per_interface = analyzer_instance.inter_bvs / len(analyzer_instance._fragments)
+            self.inter_bvs_per_interface = analyzer_instance.inter_bvs / analyzer_instance._fragments_per_cell_count
             self.interfragment_contact_atoms = analyzer_instance.interfragment_contact_atoms
             self.interfragment_contact_arbitrary_types = analyzer_instance.interfragment_contact_arbitrary_types
             self.inter_contacts_bv_estimate = analyzer_instance._inter_contacts_bv_estimate
@@ -456,6 +462,8 @@ class CrystalGraphAnalyzerResult:
             self.restored_graph_total_bvs = analyzer_instance._restored_graph_total_bvs
         else:
             self.fragments = {}
+            self.fragments_per_cell_count = np.nan
+            self.fragments_per_cell_formula = ''
             self.xbvs = np.nan
             self.mean_inter_bv = np.nan
             self.inter_bvs_per_interface = np.nan
@@ -476,7 +484,7 @@ class CrystalGraphAnalyzerResult:
         """
         results_dict = {
             'fragments': self.fragments,
-            'N_fragments': len(self.fragments),
+            'N_fragments_per_cell': self.fragments_per_cell_count,
             'total_bvs': np.round(self.total_bvs, 4),
             'inter_bvs': np.round(self.inter_bvs, 4),
             'xbvs': np.round(self.xbvs, 4),
@@ -567,12 +575,12 @@ class CrystalGraphAnalyzerResult:
             "input_file_name": self.input_file_name,
             "target_periodicity_reached": int(self.target_periodicity_reached),
             "bond_property": self.bond_property,
-            'composition': [Composition(
-                Composition(v.get('composition', '')).get_integer_formula_and_factor()[0]
-            ).formula for v in self.fragments.values()],
+            'composition': [v.get('composition', '') for v in self.fragments.values()],
             'periodicity': [v.get('periodicity', '') for v in self.fragments.values()],
             'orientation': [v.get('orientation', '') for v in self.fragments.values()],
             'estimated_charge': [v.get('estimated_charge', '') for v in self.fragments.values()],
+            'N_fragments_per_cell': self.fragments_per_cell_count,
+            'fragments_per_cell_formula': self.fragments_per_cell_formula,
             "inter_bvs": self.inter_bvs,
             "intra_bvs": self.intra_bvs,
             "total_bvs": self.total_bvs,
