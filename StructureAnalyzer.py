@@ -173,7 +173,7 @@ class CrystalGraphAnalyzer:
             target_periodicity (int): The desired periodicity of the resulting crystal graph.
         """
         monitor = []
-        deleted_contacts = [] # store contacts broken during graph editing iterations
+        deleted_contacts = [] # keep track of contacts broken during graph editing iterations
         sg_copy = copy.copy(self.sg)
 
         for threshold_weight in self._get_threshold_weights():
@@ -304,20 +304,29 @@ class CrystalGraphAnalyzer:
 
     def _restore_fragment_graph(self, fragment_sites_dict: Dict) -> None:
         """
-        Restore some intra fragment contacts
+        Restore some of the intra fragment contacts. These are the contacts
+        by restoring which the periodicity of the structure does NOT increase
         """
         # get pairs of nodes that correspond to INTRA fragment contacts
+        # if there is more than one fragment per cell
         # pairs of nodes NOT in this set correspond to INTER fragment contacts
-        intra_contacts = set(c for site_ids_list in fragment_sites_dict.values()\
-                             for c in itertools.combinations(site_ids_list, 2))
-        intra_contacts_to_restore = [c for c in self.deleted_contacts if c[0][:2] in intra_contacts]
+        intra_contacts = set(
+            c
+            for site_ids_list in fragment_sites_dict.values()\
+            for c in itertools.combinations(site_ids_list, 2)
+        )
+        
+        if len(fragment_sites_dict) > 1:
+            contacts_to_check = [c for c in self.deleted_contacts if c[0][:2] in intra_contacts]
+        else:
+            contacts_to_check = [c for c in self.deleted_contacts]
 
         # BV sum BEFORE restoring some INTRA fragment contacts
         self._edited_graph_total_bvs = sum([edge_data[2] for edge_data in self.sg_edited.graph.edges(data='BV')])
 
         # iterate over broken INTRA contacts and if the periodicity does not increase
         # restore this contact in a given fragment
-        for broken_edge_data in intra_contacts_to_restore:
+        for broken_edge_data in contacts_to_check:
             (n1, n2, translation), edge_data, _, _ = broken_edge_data
             test_graph = copy.copy(self.sg_edited)
             test_graph.add_edge(
@@ -333,7 +342,7 @@ class CrystalGraphAnalyzer:
                     to_index=n2,
                     from_jimage=(0, 0, 0),
                     to_jimage=translation,
-                    edge_properties={k: v for k, v in edge_data.items() if k not in ('to_jimage')},
+                    edge_properties={k: v for k, v in edge_data.items() if k != 'to_jimage'},
             )
         assert get_dimensionality_larsen(self.sg_edited) == self.target_periodicity, 'target dimensionsionality is not preserved'
 
@@ -444,7 +453,7 @@ class CrystalGraphAnalyzerResult:
         self.bond_property = analyzer_instance.bond_property
         self.monitor = analyzer_instance.monitor
         self.total_bvs = analyzer_instance.total_bvs
-        self._suspicious_contacts = analyzer_instance._suspicious_contacts
+        self.suspicious_contacts = analyzer_instance._suspicious_contacts
 
         if analyzer_instance.target_periodicity_reached:
             self.fragments = analyzer_instance._fragments
@@ -493,7 +502,7 @@ class CrystalGraphAnalyzerResult:
             'interfragment_contact_atoms': self.interfragment_contact_atoms,
             'interfragment_contact_arbitrary_types': self.interfragment_contact_arbitrary_types,
             'inter_contacts_bv_estimate':  self.inter_contacts_bv_estimate,
-            'suspicious_contacts': '|'.join(sorted(self._suspicious_contacts))
+            'suspicious_contacts': '|'.join(sorted(self.suspicious_contacts))
         }
 
         formatted_string = ""
@@ -593,5 +602,5 @@ class CrystalGraphAnalyzerResult:
             "interfragment_contact_arbitrary_types_full": str(self.interfragment_contact_arbitrary_types),
             "inter_contacts_bv_estimate_(tentative_share)": self.inter_contacts_bv_estimate.get('ML_estimated (confidence: False)', 0.0),
             "inter_contacts_bv_estimate_full": str(self.inter_contacts_bv_estimate),
-            'suspicious_contacts': '|'.join(sorted(self._suspicious_contacts)),
+            'suspicious_contacts': '|'.join(sorted(self.suspicious_contacts)),
         }
