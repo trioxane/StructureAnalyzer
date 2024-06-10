@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Union
 import copy
 from pathlib import Path
 import os
+import re
 
 import networkx as nx
 import pandas as pd
@@ -369,11 +370,12 @@ class CrystalGraphAnalyzer:
                 SG = component['structure_graph']
                 sites_data = component['site_ids']
                 orientation = component['orientation'] if component['orientation'] is not None else periodicity
+                hkl = np.array(orientation)
                 orientation = ''.join([str(v) for v in orientation])
                 composition = component['structure_graph'].structure.composition.formula.replace(" ", "")
 
                 fragment_dict[i] = {'composition': composition, 'periodicity': periodicity,
-                                    'orientation': orientation, 'SG': SG}
+                                    'orientation': orientation, 'hkl': hkl, 'SG': SG}
                 fragment_sites_dict[i] = sites_data
 
             # before calculating BVSs check fragment graphs and restore INTRA fragment contacts
@@ -448,6 +450,7 @@ class CrystalGraphAnalyzerResult:
         Args:
             analyzer_instance (CrystalGraphAnalyzer): An instance of CrystalGraphAnalyzer.
         """
+        self.lattice = analyzer_instance.structure.lattice
         self.target_periodicity_reached = analyzer_instance.target_periodicity_reached
         self.input_file_name = analyzer_instance.graph_name
         self.bond_property = analyzer_instance.bond_property
@@ -572,6 +575,20 @@ class CrystalGraphAnalyzerResult:
             df_dict['input_file_name'] = self.input_file_name
 
             return df_dict
+        
+    def _calculate_area(self):
+        
+        areas = []        
+        for f in self.fragments.values():
+            if f.get('periodicity', '') == '2':
+                hkl = list(map(int, re.findall(r'(\-?\d)', f.get('orientation', ''))))
+                A_hkl = self.lattice.volume / self.lattice.d_hkl(hkl)
+                areas.append(A_hkl)
+            else:
+                areas.append(0)
+
+        return areas
+                
 
     def results_as_dict(self) -> Dict:
         """
@@ -580,13 +597,14 @@ class CrystalGraphAnalyzerResult:
         Returns:
             dict: Dictionary containing results.
         """
-        return {
+        results = {
             "input_file_name": self.input_file_name,
             "target_periodicity_reached": int(self.target_periodicity_reached),
             "bond_property": self.bond_property,
             'composition': [v.get('composition', '') for v in self.fragments.values()],
             'periodicity': [v.get('periodicity', '') for v in self.fragments.values()],
             'orientation': [v.get('orientation', '') for v in self.fragments.values()],
+            'hkl_area': self._calculate_area(),
             'estimated_charge': [v.get('estimated_charge', '') for v in self.fragments.values()],
             'N_fragments_per_cell': self.fragments_per_cell_count,
             'fragments_per_cell_formula': self.fragments_per_cell_formula,
@@ -604,3 +622,5 @@ class CrystalGraphAnalyzerResult:
             "inter_contacts_bv_estimate_full": str(self.inter_contacts_bv_estimate),
             'suspicious_contacts': '|'.join(sorted(self.suspicious_contacts)),
         }
+    
+        return results
